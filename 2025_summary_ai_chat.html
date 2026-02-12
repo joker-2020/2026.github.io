@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2025年工作总结 AI 问答</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg-color: #F5F5F7;
+        --chat-bg: #FFFFFF;
+        --primary-color: #1D1D1F;
+        --text-primary: #1D1D1F;
+        --text-secondary: #86868B;
+        --bubble-user: #1D1D1F;
+        --bubble-ai: #F2F2F7;
+        --border-light: rgba(0,0,0,0.05);
+        --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+        --shadow-lg: 0 20px 40px rgba(0,0,0,0.08);
+        --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+        font-family: var(--font-family);
+        background-color: var(--bg-color);
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        height: 100vh;
+        color: var(--text-primary);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .chat-container {
+        width: 100%;
+        max-width: 900px;
+        background: var(--chat-bg);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        position: relative;
+    }
+
+    @media (min-width: 768px) {
+        body {
+            padding: 40px 0;
+            align-items: center;
+        }
+        .chat-container {
+            height: 90%;
+            border-radius: 24px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+    }
+
+    .chat-header {
+        padding: 24px 32px;
+        border-bottom: 1px solid var(--border-light);
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        z-index: 10;
+    }
+
+    .header-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--bubble-ai);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-color);
+    }
+
+    .header-info h1 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .header-info p {
+        margin: 2px 0 0 0;
+        font-size: 13px;
+        color: var(--text-secondary);
+    }
+
+    .chat-messages {
+        flex: 1;
+        padding: 32px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        background-color: #fff;
+        scroll-behavior: smooth;
+    }
+
+    .message {
+        max-width: 80%;
+        padding: 16px 24px;
+        border-radius: 20px;
+        line-height: 1.6;
+        font-size: 15px;
+        position: relative;
+        word-wrap: break-word;
+        transition: transform 0.2s ease;
+    }
+
+    .message.user {
+        align-self: flex-end;
+        background-color: var(--bubble-user);
+        color: white;
+        border-bottom-right-radius: 4px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .message.ai {
+        align-self: flex-start;
+        background-color: var(--bubble-ai);
+        color: var(--text-primary);
+        border-bottom-left-radius: 4px;
+    }
+
+    .input-area {
+        padding: 24px 32px;
+        background: #fff;
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        border-top: 1px solid var(--border-light);
+    }
+
+    input[type="text"] {
+        flex: 1;
+        padding: 16px 20px;
+        border: 1px solid transparent;
+        background-color: var(--bubble-ai);
+        border-radius: 16px;
+        outline: none;
+        font-size: 15px;
+        color: var(--text-primary);
+        transition: all 0.2s ease;
+        font-family: var(--font-family);
+    }
+
+    input[type="text"]:focus {
+        background-color: #fff;
+        box-shadow: 0 0 0 2px rgba(0,0,0,0.05);
+    }
+    
+    input[type="text"]::placeholder {
+        color: #9CA3AF;
+    }
+
+    button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    button:hover {
+        transform: scale(1.05);
+        background-color: #000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    button:active {
+        transform: scale(0.95);
+    }
+    
+    /* Markdown styling within AI messages */
+    .message.ai h2 { font-size: 1.2em; margin: 20px 0 12px; font-weight: 600; letter-spacing: -0.01em; color: #111; }
+    .message.ai h3 { font-size: 1.1em; margin: 16px 0 10px; font-weight: 600; color: #333; }
+    .message.ai strong { color: #000; font-weight: 600; }
+    .message.ai ul { padding-left: 24px; margin: 12px 0; }
+    .message.ai li { margin-bottom: 8px; }
+    .message.ai table { width: 100%; border-collapse: separate; border-spacing: 0; margin: 16px 0; font-size: 0.9em; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-light); }
+    .message.ai th, .message.ai td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border-light); }
+    .message.ai th { background-color: #fafafa; font-weight: 600; color: var(--text-secondary); font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.05em; }
+    .message.ai tr:last-child td { border-bottom: none; }
+    
+    /* Icons */
+    .icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
+
+    /* Modal Styles */
+    .modal-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+    .modal-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+    .modal-content {
+        background: #fff;
+        width: 90%;
+        max-width: 500px;
+        max-height: 80%;
+        overflow-y: auto;
+        border-radius: 24px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        padding: 24px;
+        transform: scale(0.95);
+        transition: transform 0.3s ease;
+    }
+    .modal-overlay.active .modal-content {
+        transform: scale(1);
+    }
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .modal-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+    }
+    .close-btn {
+        width: 32px;
+        height: 32px;
+        background: #f5f5f7;
+        color: #666;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        padding: 0;
+    }
+    .close-btn:hover {
+        background: #e5e5e7;
+    }
+    .keyword-group {
+        margin-bottom: 16px;
+    }
+    .keyword-section-title {
+        font-size: 13px;
+        color: #86868b;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+    .keyword-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .keyword-tag {
+        background: #f5f5f7;
+        padding: 6px 12px;
+        border-radius: 16px;
+        font-size: 13px;
+        color: #1d1d1f;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .keyword-tag:hover {
+        background: #e5e5e7;
+    }
+    .header-btn {
+        margin-left: auto;
+        background: transparent;
+        color: var(--text-secondary);
+        width: auto;
+        padding: 0 12px;
+        height: 40px;
+        gap: 6px;
+        font-size: 13px;
+        border-radius: 20px;
+    }
+    .header-btn:hover {
+        background: var(--bubble-ai);
+        color: var(--text-primary);
+        transform: none;
+        box-shadow: none;
+    }
+
+    .ai-disclaimer {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-top: 12px;
+        padding-top: 8px;
+        border-top: 1px solid var(--border-light);
+    }
+
+    /* Skeleton Loading */
+    .skeleton-loader { width: 100%; display: flex; flex-direction: column; gap: 10px; min-width: 200px; }
+    .skeleton-line {
+        height: 12px;
+        background: linear-gradient(90deg, #e1e4e8 0%, #f0f2f5 50%, #e1e4e8 100%);
+        background-size: 200% 100%;
+        border-radius: 6px;
+        animation: skeleton-loading 1.5s infinite ease-in-out;
+    }
+    @keyframes skeleton-loading {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+</style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">
+        <div class="header-icon">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16zm1 11h-2v-2h2v2zm0-4h-2V7h2v4z"/></svg>
+        </div>
+        <div class="header-info">
+            <h1>2025年个人工作总结-张健</h1>
+            <p>AI 智能助手</p>
+        </div>
+        <button class="header-btn" onclick="openModal()" title="查看关键词">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+            <span>关键词</span>
+        </button>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+        <div class="message ai">您好！我是张健《2025年个人工作总结》的AI助手。您可以问我关于他在2025年的工作挑战、能力提升、不足之处或未来规划等问题。</div>
+    </div>
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="输入您的问题，例如：2025年遇到了哪些挑战？右上角可查看关键词！" onkeypress="handleKeyPress(event)">
+        <button onclick="sendMessage()">
+            <svg class="icon" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
+    </div>
+    
+    <!-- Keyword Modal -->
+    <div id="keywordModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>关键词列表</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="keywordList"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Document content embedded directly
+    const docContent = `
+# 2025年个人工作总结（产品经理）
+
+2025年，是他职业身份从开发岗位向产品经理转型、逐步扎根产品领域的关键一年。全年围绕公司产品业务核心，负责云悉产品的设计、交付、验收及全流程售前售后服务；独立承接公司外包软件开发项目，覆盖业务对接、需求挖掘、产品设计、外包协同开发、验收交付全链条；同时承担公司内部运营服务中心系统的产品设计、需求沟通、开发分配、验收推进及落地推广工作。在岗位转型的机遇与挑战中，他逐步熟悉产品经理核心职责，积累了多场景产品工作经验，也清晰认识到自身不足。现将2025年工作情况、成长收获及未来规划总结如下，严格对照既定要求梳理，确保全面、务实、有针对性。
+
+## 一、2025年遇到的关键挑战与应对方式
+
+2025年，他面临的核心挑战集中在岗位转型后的能力适配的短板，以及多线工作并行的压力，具体关键挑战及应对措施如下：
+
+### （一）关键挑战
+
+1. 岗位转型后的能力断层：入职初期从事开发岗位，转型产品经理后，缺乏系统的产品思维和专业方法论，核心挑战是深度产品经理能力的提升，尤其在需求拆解、产品设计的专业性上存在明显不足。
+
+2. 跨角色沟通效率偏低：由于过往开发岗位的思维惯性，与开发人员进行需求沟通、验收对接时，难以快速切换视角，经常出现需求传递偏差、验收标准不清晰的问题，导致沟通成本增加，偶尔影响工作推进节奏。
+
+3. 多线工作统筹难度大：同时负责部门产品、外包项目、公司内部系统三大板块工作，每个板块均需覆盖从需求到交付的全流程，且外包对接、公司内部系统需投入大量精力协调，易出现工作兼顾不周全、进度把控不到位的情况。
+
+### （二）应对方式
+
+1. 针对性补位产品能力：主动搜集产品经理核心课程、行业案例，利用业余时间系统学习需求拆解、产品原型设计、PRD撰写等专业内容；结合自身开发经验，快速理解产品设计与技术实现的衔接要点，将技术思维转化为产品落地思维，逐步弥补能力断层。
+
+2. 优化跨角色沟通模式：总结需求沟通、验收对接中的问题，调整沟通逻辑——与开发人员沟通时，先明确需求核心目标，再拆解技术实现细节，避免用“产品语言”替代“技术语言”；验收前，提前梳理验收标准、明确测试重点，形成书面文档同步给开发团队，减少口头沟通偏差；建立定期沟通机制，检查需求开发情况、及时解决分歧，提升沟通效率。
+
+3. 科学统筹多线工作：引入优先级管理方法，对三大板块工作按“紧急重要”原则分类排序，优先推进核心业务、关键项目；制定详细的工作台账，明确每个项目的时间节点、责任分工（含外包公司、内部开发人员）；合理分配精力，外包项目重点把控需求对接和验收环节，内部系统重点推进落地推广，部门产品重点优化设计细节，确保各项工作有序推进。
+
+## 二、2025年的个人思维与能力的提升与收获
+
+经过2025年一年的实践与打磨，无论是思维模式还是核心能力，均实现了从开发岗位到产品经理的阶段性跨越，收获颇丰，具体体现在以下方面：
+
+### （一）思维模式的转变与提升
+
+1. 从“技术实现”向“产品价值”转变：过往开发岗位更关注“如何实现功能”，转型后逐步建立产品思维，学会从业务视角、用户视角出发，思考需求的合理性、功能的实用性，聚焦“产品能解决什么问题、能创造什么价值”，不再局限于技术层面的可行性，全局观和业务敏感度显著提升。
+
+2. 从“被动执行”向“主动统筹”转变：初期转型时，多是被动承接工作任务，后期逐步学会主动挖掘需求、预判工作风险，针对外包项目、内部系统的推进，主动协调各方资源、把控进度，培养了统筹规划、主动担当的思维，能够独立应对多场景、复杂的工作任务。
+
+3. 从“单一视角”向“多元视角”转变：在与售前、售后、开发、外包公司、公司各部门同事的对接中，学会换位思考，理解不同角色的核心诉求（如开发关注技术落地难度、业务部门关注使用便捷性、外包公司关注需求明确度），沟通和解决问题的灵活性显著提升。
+
+### （二）核心能力的提升与收获
+
+1. 产品全流程管控能力：熟练掌握了产品设计、需求沟通、开发对接、验收交付、售前售后的全流程工作方法，能够独立负责部门产品、外包项目、内部系统的全流程推进，累计完成多项产品优化、外包项目交付及内部系统落地，产品落地能力得到充分锻炼。
+
+2. 沟通协调与资源整合能力：通过大量的跨角色、跨单位对接（外包公司、公司各业务部门、开发团队），沟通表达能力、协调能力显著提升，能够快速明确需求、化解分歧、整合资源，确保各项工作高效推进；尤其在外包项目对接中，学会了如何规范需求、约束外包开发进度，提升外包项目交付质量。
+
+3. 问题解决与应急处理能力：面对产品设计缺陷、开发进度滞后、验收分歧等问题，不再慌乱无措，而是学会冷静分析问题根源，制定针对性解决方案，如针对需求沟通偏差，优化沟通文档和流程；针对外包开发进度滞后，增加对接频次、明确违约责任，逐步提升了问题解决和应急处理的能力。
+
+4. 行业认知与业务理解能力：全年深耕公司核心业务，主动了解行业发展趋势、同类产品特点，结合公司实际业务需求，优化产品设计和需求规划，对公司业务的理解深度、对产品行业的认知广度均有明显提升，为后续产品优化、业务拓展奠定了基础。
+
+## 三、他人指出或自认为存在需要改进的问题以及改进计划
+
+结合全年工作实践，通过自我复盘及梳理，明确自身存在的不足的地方，同时制定针对性改进计划，确保后续逐步完善，提升工作质量和专业能力。
+
+### （一）存在的主要问题
+
+1. 产品设计不够全面，存在明显缺陷：自认为最突出的问题是产品设计能力不足，部分产品或功能在设计时，对用户需求、业务场景的考虑不够周全，缺乏前瞻性，导致设计完成后出现细节漏洞、功能不完善的情况，后期需投入额外精力修改优化，影响工作进度和产品体验。
+
+2. 开发进度监督和验收工作不到位：在多线工作并行的情况下，对开发进度的把控不够严格，尤其是外包项目和内部系统开发，偶尔出现进度滞后未及时发现、未及时督促的情况；验收环节，虽制定了验收标准，但部分细节把控不够细致，偶尔出现验收通过后仍有小问题的情况，影响产品交付质量。
+
+3. 产品专业能力仍有短板：作为转型后的产品经理，缺乏系统的产品方法论支撑，在需求挖掘的深度、产品原型设计的专业性、PRD撰写的规范性上仍有不足，与资深产品经理相比存在差距，影响产品设计的效率和质量。
+
+### （二）针对性改进计划
+
+1. 优化产品设计流程，提升设计全面性：建立“需求调研-需求拆解-原型设计-评审修改-定稿”的标准化设计流程，设计前充分调研用户需求、梳理业务场景，广泛征求业务部门、开发团队的意见；设计完成后，组织多方评审，重点检查设计细节、功能合理性、场景适配性，避免设计缺陷；同时，多借鉴行业优秀案例，积累设计经验，提升自身设计能力。
+
+2. 强化进度监督，严格把控验收环节：优化工作台账管理，对每个开发项目（含外包、内部）明确关键时间节点、责任人，每日核对进度，每周与开发团队、外包公司同步进度，对滞后项目及时分析原因、督促整改，必要时调整工作优先级；验收环节，细化验收标准，分模块、分细节进行验收，邀请开发、业务部门共同参与，验收完成后形成验收报告，明确验收结果和遗留问题，确保遗留问题闭环解决，提升交付质量。
+
+3. 系统提升产品专业能力：制定系统的学习计划，针对性弥补产品专业短板，通过线上课程、书籍、行业交流等方式，重点学习需求挖掘、PRD撰写、产品原型设计等内容；主动向公司资深产品同事请教，参与公司各类产品评审会议，积累实战经验，逐步提升产品专业素养。
+
+## 四、当前工作与个人职业规划的偏差
+
+他的个人目前职业规划是成为一名资深产品经理，能够独立负责核心产品的规划、设计、落地及迭代优化，具备较强的产品战略思维、需求挖掘能力和团队管理能力，助力公司产品迭代升级和业务拓展。结合2025年当前工作实际，与个人职业规划存在一定偏差，具体如下：
+
+1. 专业深度不足，与资深产品经理要求有差距：当前工作更多聚焦于产品全流程的执行层面（如需求对接、开发跟进、验收交付），缺乏对产品战略规划、产品迭代优化、用户增长等核心能力的锻炼，与“资深产品经理”所需的专业深度、战略思维存在偏差，未能充分参与产品核心规划工作。
+
+2. 工作范围较杂，精力分散难以聚焦核心能力提升：由于同时负责部门产品、外包项目、内部系统，且涵盖售前售后、外包对接等多项工作，精力过于分散，难以集中精力深耕产品设计、需求挖掘等核心领域，导致核心能力提升速度不及预期，与职业规划中“快速提升核心产品能力”的目标存在偏差。
+
+3. 缺乏团队管理相关经验积累：个人职业规划中包含“具备团队管理能力”的目标，但当前工作主要以个人负责全流程推进为主，较少参与团队管理、成员指导等工作，缺乏团队协作统筹、人员管理的经验，未能为后续团队管理能力提升奠定基础，与规划目标存在一定偏差。
+
+4. 行业视野较窄，缺乏跨行业产品经验借鉴：当前工作局限于公司现有业务领域，未能接触更多跨行业产品案例、行业前沿理念，难以形成多元化的产品思维，与资深产品经理所需的“广阔行业视野”存在偏差，不利于后续产品创新和战略规划能力的提升。
+
+针对以上偏差，他将在后续工作中，主动调整工作重心，聚焦核心能力提升，逐步缩小与职业规划的差距，确保职业发展方向不偏离。
+
+## 五、未来一年与三年的个人提升计划
+
+结合自身不足、当前工作现状及个人职业规划，制定未来一年（2026年）和三年（2026-2028年）的个人提升计划，明确学习方式、提升内容及具体时间节点，确保计划可落地、可执行、有成效。
+
+### （一）未来一年（2026年）个人提升计划
+
+|提升模块|具体提升内容|完成时间节点|预期目标|
+|---|---|---|---|
+|产品设计能力|需求挖掘、PRD撰写、产品原型设计、产品细节优化|2026年3月底：完成线上课程学习；2026年6月底：读完2本核心书籍，做好读书笔记；2026年12月底：熟练掌握PRD撰写规范，产品设计细节漏洞减少80%。|能够独立完成规范的PRD撰写、高质量产品原型设计，产品设计全面性显著提升，减少设计缺陷。|
+|进度与验收管理|项目进度管控方法、验收标准细化、外包项目管理技巧|2026年4月底：完成PMP基础内容学习；2026年6月底：优化工作台账，形成标准化进度管控流程；2026年12月底：全年项目进度滞后率控制在5%以内，验收合格率达到100%。|熟练掌握项目进度管控方法，能够有效把控开发及外包项目进度，验收环节细致规范，提升交付质量。|
+|沟通协调能力|跨角色沟通技巧、需求传递准确性、分歧化解能力|2026年5月底：读完相关书籍，掌握核心沟通技巧；2026年10月底：沟通偏差率减少90%，能够快速化解沟通分歧；2026年12月底：跨角色沟通效率显著提升，获得同事认可。|能够高效完成跨角色、跨单位沟通，需求传递准确无误，快速化解分歧，提升工作推进效率。|
+
+
+### （二）未来三年（2026-2028年）个人提升计划
+
+|提升阶段（年份）|核心提升目标|学习/提升方式|时间节点要求|
+|---|---|---|---|
+|第一阶段（2026-2027年）|夯实产品基础能力，弥补自身短板，能够独立高效完成各类产品全流程工作，缩小与职业规划的偏差。|线上课程学习、书籍阅读、实战练习、复盘总结、业务深耕。|2026年12月底：全面完成年度提升计划，产品基础能力达标，能够独立负责核心产品模块工作。|
+|第二阶段（2027-2028年）|提升产品核心能力，具备产品战略思维和迭代优化能力，能够参与公司核心产品规划，积累初步团队管理经验。|1. 报名高级产品经理课程，参加行业峰会、交流会；2. 深度参与核心产品工作，实战积累规划、迭代经验；3. 主动承担新人指导工作，练习团队管理技巧；4. 关注行业动态，每月阅读1篇行业深度报告，借鉴跨行业经验。|2027年6月底：完成高级产品经理课程学习，能够独立制定产品迭代计划；2027年9月底：积累初步团队管理经验，能够顺利指导新人开展工作；2027年12月底：具备产品战略思维，能够参与核心产品规划，行业视野显著拓展。|
+
+## 六、总结
+
+2025年，是他岗位转型、快速成长的一年，也是充满挑战与收获的一年。在全年的工作中，他顺利完成了各项工作任务，逐步实现了从开发岗位向产品经理的转变，在思维模式、核心能力上均取得了一定的提升，但也清晰认识到自身存在的不足。
+2026年及未来三年，他将以此次总结为契机，正视自身不足，严格落实各项改进计划和提升计划，聚焦核心能力提升，缩小与个人职业规划的差距，努力成长为一名合格、优秀的产品经理。同时，也希望能够在公司的培养和团队的支持下，充分发挥自身价值，积极配合公司和团队的各项工作，为公司产品迭代升级、业务拓展贡献自己的全部力量。
+`;
+
+    // Simple keyword mapping to sections
+    const knowledgeBase = [
+        { keywords: ["挑战", "困难", "难点", "问题", "压力"], section: "一、2025年遇到的关键挑战与应对方式", content: docContent.split("## 一、2025年遇到的关键挑战与应对方式")[1].split("## 二")[0] },
+        { keywords: ["思维", "能力", "收获", "提升", "转变", "成长"], section: "二、2025年的个人思维与能力的提升与收获", content: docContent.split("## 二、2025年的个人思维与能力的提升与收获")[1].split("## 三")[0] },
+        { keywords: ["不足", "缺点", "改进", "缺陷", "短板"], section: "三、他人指出或自认为存在需要改进的问题以及改进计划", content: docContent.split("## 三、他人指出或自认为存在需要改进的问题以及改进计划")[1].split("## 四")[0] },
+        { keywords: ["规划", "职业", "偏差", "目标", "资深"], section: "四、当前工作与个人职业规划的偏差", content: docContent.split("## 四、当前工作与个人职业规划的偏差")[1].split("## 五")[0] },
+        { keywords: ["未来", "计划", "明年", "三年", "2026", "2027", "2028"], section: "五、未来一年与三年的个人提升计划", content: docContent.split("## 五、未来一年与三年的个人提升计划")[1].split("## 六")[0] },
+        { keywords: ["总结", "概括", "综述"], section: "六、总结", content: docContent.split("## 六、总结")[1] }
+    ];
+
+    function handleKeyPress(event) { if (event.key === 'Enter') sendMessage(); }
+
+    function sendMessage() {
+        const input = document.getElementById('userInput');
+        const text = input.value.trim();
+        if (!text) return;
+        addMessage(text, 'user');
+        input.value = '';
+        
+        // Add loading skeleton
+        const loadingId = 'loading-' + Date.now();
+        const messagesDiv = document.getElementById('chatMessages');
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'message ai';
+        loadingDiv.id = loadingId;
+        loadingDiv.innerHTML = `
+            <div class="skeleton-loader">
+                <div class="skeleton-line" style="width: 90%"></div>
+                <div class="skeleton-line" style="width: 70%"></div>
+                <div class="skeleton-line" style="width: 40%"></div>
+            </div>
+        `;
+        messagesDiv.appendChild(loadingDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+        setTimeout(() => {
+            // Remove loading
+            const loader = document.getElementById(loadingId);
+            if (loader) loader.remove();
+            
+            const response = generateResponse(text);
+            addMessage(response, 'ai');
+        }, 3000);
+    }
+
+    function addMessage(text, type) {
+        const messagesDiv = document.getElementById('chatMessages');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${type}`;
+        if (type === 'ai') {
+            // Split by double newlines to separate paragraphs/tables
+            const blocks = text.split(/\n{2,}/);
+            let finalHtml = '';
+
+            blocks.forEach(block => {
+                if (!block.trim()) return;
+                if (block.trim().startsWith('|')) {
+                    // Table processing
+                    const rows = block.trim().split('\n');
+                    let tableHtml = '<table>';
+                    let isHeader = true;
+                    rows.forEach(row => {
+                        if (row.includes('---')) {
+                            isHeader = false;
+                            return;
+                        }
+                        tableHtml += '<tr>';
+                        row.split('|').forEach((cell, index, arr) => {
+                            // Skip first and last if empty (common in markdown tables with border pipes)
+                            if ((index === 0 || index === arr.length - 1) && cell.trim() === '') return;
+                            
+                            const tag = isHeader ? 'th' : 'td';
+                            tableHtml += `<${tag}>${cell.trim()}</${tag}>`;
+                        });
+                        tableHtml += '</tr>';
+                    });
+                    tableHtml += '</table>';
+                    finalHtml += tableHtml;
+                } else {
+                    // Text processing
+                    let formatted = block
+                        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\n/g, '<br>');
+                    finalHtml += `<div style="margin-bottom: 12px;">${formatted}</div>`;
+                }
+            });
+            
+            // Typewriter effect
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = finalHtml;
+            
+            const children = Array.from(tempDiv.childNodes);
+            let childIndex = 0;
+            function processNextBlock() {
+                if (childIndex < children.length) {
+                    typeWriter(children[childIndex], msgDiv, messagesDiv, () => {
+                        childIndex++;
+                        processNextBlock();
+                    });
+                } else {
+                    const disclaimer = document.createElement('div');
+                    disclaimer.className = 'ai-disclaimer';
+                    disclaimer.textContent = '本次回答内容为AI行为，请注意辨别，和本人无关';
+                    msgDiv.appendChild(disclaimer);
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                }
+            }
+            processNextBlock();
+        } else {
+            msgDiv.textContent = text;
+        }
+        messagesDiv.appendChild(msgDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+    
+    function typeWriter(sourceNode, targetElement, scrollContainer, onComplete) {
+        if (sourceNode.nodeType === Node.TEXT_NODE) {
+            const text = sourceNode.textContent;
+            const textNode = document.createTextNode('');
+            targetElement.appendChild(textNode);
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    textNode.nodeValue += text.charAt(i);
+                    i++;
+                    scrollContainer.scrollTop = scrollContainer.scrollHeight;
+                    setTimeout(type, 15);
+                } else {
+                    if (onComplete) onComplete();
+                }
+            }
+            type();
+        } else if (sourceNode.nodeType === Node.ELEMENT_NODE) {
+            const element = document.createElement(sourceNode.tagName);
+            Array.from(sourceNode.attributes).forEach(attr => {
+                element.setAttribute(attr.name, attr.value);
+            });
+            targetElement.appendChild(element);
+            
+            const children = Array.from(sourceNode.childNodes);
+            let childIndex = 0;
+            function processNextChild() {
+                if (childIndex < children.length) {
+                    typeWriter(children[childIndex], element, scrollContainer, () => {
+                        childIndex++;
+                        processNextChild();
+                    });
+                } else {
+                    if (onComplete) onComplete();
+                }
+            }
+            processNextChild();
+        } else {
+            if (onComplete) onComplete();
+        }
+    }
+
+    function generateResponse(query) {
+        let bestMatch = null;
+        let maxKeywords = 0;
+        for (const kb of knowledgeBase) {
+            let count = 0;
+            kb.keywords.forEach(kw => { if (query.includes(kw)) count++; });
+            if (count > maxKeywords) { maxKeywords = count; bestMatch = kb; }
+        }
+        if (bestMatch) return `<strong>根据他的自述：</strong><br><br>` + bestMatch.content.trim();
+        if (query.includes("是谁") || query.includes("什么文件")) return "我是基于《2025年个人工作总结（张健）》的AI助手。这份文档总结了作者在2025年从开发转型产品经理的关键挑战、能力提升、不足之处以及未来的职业规划。";
+        return "抱歉，我只能回答关于这份工作总结文档的内容。您可以尝试问我关于“挑战”、“收获”、“改进计划”或“未来规划”的问题。";
+    }
+
+    function openModal() {
+        const modal = document.getElementById('keywordModal');
+        const list = document.getElementById('keywordList');
+        list.innerHTML = '';
+        
+        knowledgeBase.forEach(kb => {
+            const group = document.createElement('div');
+            group.className = 'keyword-group';
+            
+            const title = document.createElement('div');
+            title.className = 'keyword-section-title';
+            title.textContent = kb.section.split('、')[1] || kb.section;
+            
+            const tags = document.createElement('div');
+            tags.className = 'keyword-tags';
+            
+            kb.keywords.forEach(kw => {
+                const tag = document.createElement('span');
+                tag.className = 'keyword-tag';
+                tag.textContent = kw;
+                tag.onclick = () => {
+                    document.getElementById('userInput').value = kw;
+                    closeModal();
+                    sendMessage();
+                };
+                tags.appendChild(tag);
+            });
+            
+            group.appendChild(title);
+            group.appendChild(tags);
+            list.appendChild(group);
+        });
+        
+        modal.classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('keywordModal').classList.remove('active');
+    }
+    
+    // Close on click outside
+    document.getElementById('keywordModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+</script>
+</body>
+</html>
