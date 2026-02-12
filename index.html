@@ -585,7 +585,7 @@
                 } else {
                     const disclaimer = document.createElement('div');
                     disclaimer.className = 'ai-disclaimer';
-                    disclaimer.textContent = '本次回答内容为AI行为，请注意辨别，和本人无关';
+                    disclaimer.textContent = '内容由AI生成，请仔细甄别';
                     msgDiv.appendChild(disclaimer);
                     messagesDiv.scrollTop = messagesDiv.scrollHeight;
                 }
@@ -649,7 +649,7 @@
             if (count > maxKeywords) { maxKeywords = count; bestMatch = kb; }
         }
         if (bestMatch) return `<strong>根据他的自述：</strong><br><br>` + bestMatch.content.trim();
-        if (query.includes("是谁") || query.includes("什么文件") || query.includes("你是什么") || query.includes("模型") || query.includes("AI") || query.includes("ai")) return "我是基于《2025年个人工作总结（张健）》的AI助手。这份文档总结了作者在2025年从开发转型产品经理的关键挑战、能力提升、不足之处以及未来的职业规划。";
+        if (query.includes("是谁") || query.includes("什么文件") || query.includes("你是") || query.includes("模型") || query.includes("AI") || query.includes("ai")) return "我是基于《2025年个人工作总结（张健）》的AI助手。这份文档总结了作者在2025年从开发转型产品经理的关键挑战、能力提升、不足之处以及未来的职业规划。";
         return "抱歉，我只能回答关于这份工作总结文档的内容。您可以尝试问我关于“挑战”、“收获”、“改进计划”或“未来规划”的问题。";
     }
 
